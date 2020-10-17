@@ -117,16 +117,18 @@ class _EmailPasswordFormState extends State<_EmailPasswordForm> {
   // Sign in with email and password.
   void _signInWithEmailAndPassword() async {
     try {
-      final User user = (await _auth.signInWithEmailAndPassword(
+      final User _user = (await _auth.signInWithEmailAndPassword(
         email: _emailController.text,
         password: _passwordController.text,
       ))
           .user;
 
-      Navigator.of(context).push(
+      Navigator.of(context).pushReplacement(
         MaterialPageRoute<void>(
           builder: (BuildContext context) {
-            return HomePage();
+            return HomePage(
+              user: _user,
+            );
           },
         ),
       );

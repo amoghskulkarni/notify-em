@@ -12,13 +12,13 @@ User user;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  _auth.authStateChanges().listen((User u) {
-    if (u == null) {
+  _auth.authStateChanges().listen((User _user) {
+    if (_user == null) {
       print('User is currently signed out!');
     } else {
       print('User is signed in!');
     }
-    user = u;
+    user = _user;
   });
   runApp(App());
 }
@@ -70,7 +70,9 @@ class LandingPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (user != null) {
-      return HomePage();
+      return HomePage(
+        user: user,
+      );
     }
     return SignInPage();
   }

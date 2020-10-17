@@ -9,6 +9,10 @@ class HomePage extends StatefulWidget {
   /// The page title.
   final String title = 'Notify \'Em';
 
+  // The user object that gets passed to this widget
+  final User user;
+  HomePage({Key key, @required this.user}) : super(key: key);
+
   @override
   _HomePageState createState() => _HomePageState();
 }
@@ -25,13 +29,9 @@ class _HomePageState extends State<HomePage> {
               child: const Text('Sign out'),
               textColor: Theme.of(context).buttonColor,
               onPressed: () {
-                final User u = _auth.currentUser;
                 _signOut();
-                final String uid = u.uid;
-                Scaffold.of(context).showSnackBar(SnackBar(
-                  content: Text(uid + ' has successfully signed out.'),
-                ));
-                Navigator.of(context).push(
+
+                Navigator.of(context).pushReplacement(
                   MaterialPageRoute<void>(
                     builder: (BuildContext context) {
                       return SignInPage();
@@ -44,12 +44,14 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
       body: Builder(builder: (BuildContext context) {
+        final String username = widget.user?.email;
+
         return ListView(
           padding: EdgeInsets.all(8),
           scrollDirection: Axis.vertical,
           children: <Widget>[
             Center(
-              child: Text('Welcome!'),
+              child: Text('Welcome $username!'),
             )
           ],
         );
