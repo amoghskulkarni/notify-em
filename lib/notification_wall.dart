@@ -15,6 +15,9 @@ class NotificationWallPage extends StatefulWidget {
 }
 
 class _NotificationWallPageState extends State<NotificationWallPage> {
+  List<Timestamp> dateDropdownValues = [null];
+  Timestamp selectedDate;
+
   @override
   Widget build(BuildContext context) {
     // return NotificationCards(user: widget.user);
@@ -27,7 +30,7 @@ class _NotificationWallPageState extends State<NotificationWallPage> {
         builder:
             (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
           if (snapshot.hasError) {
-            return Text('Something went wrong');
+            return Text('Something went wrong!');
           }
 
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -36,13 +39,47 @@ class _NotificationWallPageState extends State<NotificationWallPage> {
             );
           }
 
-          final Map<String, dynamic> docdata = snapshot.data.data();
-          final notifications = docdata['notifications'];
+          if (snapshot.hasData) {
+            final Map<String, dynamic> docdata = snapshot.data.data();
+            final List<dynamic> notifications = docdata['notifications'];
+            List<dynamic> filteredNotifications;
 
-          return new Column(
-            children: [
-              NotificationCards(notifications: notifications),
-            ],
+            for (var n in notifications) {
+              final Timestamp t = n['date'];
+
+              // Push the date if the array doesn't contain it
+              if (!dateDropdownValues.contains(t)) {
+                dateDropdownValues.add(t);
+              }
+            }
+
+            // Filter notifications according to what is selected
+            // in the dropdowns
+            filteredNotifications = notifications.where((el) {
+              if (selectedDate == null) {
+                return true;
+              }
+              final Timestamp t = el['date'];
+              if ((selectedDate != null) && (selectedDate.compareTo(t) == 0)) {
+                return true;
+              }
+              return false;
+            }).toList();
+
+            return new Column(children: [
+              _getDateDropdown(),
+              SizedBox(
+                height: 10.0,
+              ),
+              Expanded(
+                child: NotificationCards(notifications: filteredNotifications),
+              ),
+            ]);
+          }
+
+          // Show the spinner by default
+          return CircularProgressIndicator(
+            value: null,
           );
         },
       );
@@ -54,50 +91,53 @@ class _NotificationWallPageState extends State<NotificationWallPage> {
       );
     }
   }
+
+  Widget _getDateDropdown() {
+    return DropdownButton<Timestamp>(
+      value: selectedDate,
+      icon: Icon(Icons.arrow_downward),
+      iconSize: 16,
+      elevation: 8,
+      style: TextStyle(color: Colors.deepPurple),
+      underline: Container(
+        height: 2,
+        color: Colors.blue[200],
+      ),
+      onChanged: (Timestamp newValue) {
+        setState(() {
+          selectedDate = newValue;
+        });
+      },
+      items: dateDropdownValues.map<DropdownMenuItem<Timestamp>>((Timestamp t) {
+        String description = "";
+        if (t == null) {
+          description += "All";
+        } else {
+          final DateTime d =
+              DateTime.fromMillisecondsSinceEpoch(t.millisecondsSinceEpoch);
+
+          description += d.month.toString();
+          description += '/';
+          description += d.year.toString();
+        }
+        return DropdownMenuItem<Timestamp>(
+          value: t,
+          child: Text(description),
+        );
+      }).toList(),
+    );
+  }
 }
 
 class NotificationCards extends StatelessWidget {
   // The user object that gets passed to this widget
-  final Map<dynamic, dynamic> notifications;
+  final List<dynamic> notifications;
   NotificationCards({Key key, @required this.notifications}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    // if (user != null) {
-    //   final String _uid = user.uid;
-    //   DocumentReference userDoc = firestore.collection('data').doc(_uid);
-
-    //   return StreamBuilder<DocumentSnapshot>(
-    //     stream: userDoc.snapshots(),
-    //     builder:
-    //         (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
-    //       if (snapshot.hasError) {
-    //         return Text('Something went wrong');
-    //       }
-
-    //       if (snapshot.connectionState == ConnectionState.waiting) {
-    //         return CircularProgressIndicator(
-    //           value: null,
-    //         );
-    //       }
-
-    //       final Map<String, dynamic> docdata = snapshot.data.data();
-    //       final notifications = docdata['notifications'];
-
-    //       return new ListView(
-    //         scrollDirection: Axis.vertical,
-    //         children: _generateCards(notifications),
-    //       );
-    //     },
-    //   );
-    // } else {
-    // return Container(
-    //   child: CircularProgressIndicator(
-    //     value: null,
-    //   ),
-    // );
-    // }
     return ListView(
+      shrinkWrap: true,
       scrollDirection: Axis.vertical,
       children: _generateCards(notifications),
     );
