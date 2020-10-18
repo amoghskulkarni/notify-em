@@ -47,7 +47,6 @@ class NotificationCards extends StatelessWidget {
           final notifications = docdata['notifications'];
 
           return new ListView(
-            shrinkWrap: true,
             scrollDirection: Axis.vertical,
             children: _generateCards(notifications),
           );
@@ -58,6 +57,13 @@ class NotificationCards extends StatelessWidget {
     }
   }
 
+  Color _getCardColorByInvestment(num gain) {
+    if (gain < 0.0) {
+      return Colors.red;
+    }
+    return Colors.green;
+  }
+
   List<Widget> _generateCards(listIn) {
     List<Widget> listOut = [];
 
@@ -66,6 +72,7 @@ class NotificationCards extends StatelessWidget {
       final num roi = element['return'];
       final num nav = element['NAV'];
       final String folio = element['folio'];
+      final String option = element['option'];
       final Timestamp timestamp = element['date'];
 
       final DateTime date =
@@ -73,56 +80,146 @@ class NotificationCards extends StatelessWidget {
 
       listOut.add(
         Padding(
-          padding: EdgeInsets.all(15.0),
+          padding: EdgeInsets.fromLTRB(15.0, 15.0, 15.0, 0.0),
           child: Card(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                ListTile(
-                  title: Text(
-                    element['scheme'],
-                    style: TextStyle(
-                      fontSize: 20.0,
-                      fontWeight: FontWeight.bold,
+                SizedBox(
+                  height: 5.0,
+                ),
+                SizedBox(
+                  height: 10.0,
+                  child: Container(
+                    color: _getCardColorByInvestment(roi),
+                  ),
+                ),
+                Column(
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.all(15.0),
+                      child: Text(
+                        element['scheme'],
+                        style: TextStyle(
+                          fontSize: 20.0,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    Row(
+                      children: [
+                        SizedBox(
+                          width: 10.0,
+                        ),
+                        Text('Folio: '),
+                        Text(
+                          folio,
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        SizedBox(
+                          width: 10.0,
+                        ),
+                        Text('Option: '),
+                        Text(
+                          option,
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                SizedBox(
+                  height: 10.0,
+                ),
+                Padding(
+                  padding: EdgeInsets.fromLTRB(10.0, 0.0, 10.0, 0.0),
+                  child: Card(
+                    elevation: 0.0,
+                    color: Colors.lightBlue[50].withAlpha(80),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Padding(
+                            padding: EdgeInsets.all(10.0),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text('Investment'),
+                                SizedBox(
+                                  height: 5.0,
+                                ),
+                                Text(
+                                  investment.toString(),
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        VerticalDivider(
+                          color: Colors.black,
+                        ),
+                        Expanded(
+                          child: Padding(
+                            padding: EdgeInsets.all(10.0),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text('Returns'),
+                                SizedBox(
+                                  height: 5.0,
+                                ),
+                                Text(
+                                  roi.toString() + ' %',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        VerticalDivider(),
+                        Expanded(
+                          child: Padding(
+                            padding: EdgeInsets.all(10.0),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text('NAV'),
+                                SizedBox(
+                                  height: 5.0,
+                                ),
+                                Text(
+                                  nav.toString(),
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  subtitle: Text('Folio: $folio'),
                 ),
                 Padding(
-                  padding: EdgeInsets.fromLTRB(10.0, 0.0, 10.0, 0.0),
-                  child: Divider(),
-                ),
-                ListTile(
-                  title: Text('Investment'),
-                  subtitle: Text(investment.toString()),
-                ),
-                ListTile(
-                  title: Text('Return on Investment (RoI)'),
-                  subtitle: Text(
-                    roi.toString() + ' %',
-                    // style: TextStyle(
-                    //   color: (roi < 0.0) ? Colors.red : Colors.green,
-                    // ),
-                  ),
-                ),
-                ListTile(
-                  title: Text('NAV'),
-                  subtitle: Text(nav.toString()),
-                ),
-                Padding(
-                  padding: EdgeInsets.fromLTRB(10.0, 0.0, 10.0, 0.0),
-                  child: Divider(),
-                ),
-                Padding(
-                  padding: EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
+                  padding: EdgeInsets.all(10.0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      Text(date.day.toString() +
-                          ' / ' +
-                          date.month.toString() +
-                          ' / ' +
-                          date.year.toString())
+                      Text('As of: '),
+                      Text(
+                        date.day.toString() +
+                            ' / ' +
+                            date.month.toString() +
+                            ' / ' +
+                            date.year.toString(),
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ],
                   ),
                 ),
