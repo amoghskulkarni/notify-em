@@ -41,7 +41,9 @@ class NotificationCards extends StatelessWidget {
           }
 
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Text("Loading");
+            return CircularProgressIndicator(
+              value: null,
+            );
           }
 
           final Map<String, dynamic> docdata = snapshot.data.data();
@@ -54,7 +56,11 @@ class NotificationCards extends StatelessWidget {
         },
       );
     } else {
-      return Container();
+      return Container(
+        child: CircularProgressIndicator(
+          value: null,
+        ),
+      );
     }
   }
 

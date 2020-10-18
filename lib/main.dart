@@ -58,7 +58,9 @@ class FirebaseLoader extends StatelessWidget {
         return Container(
           color: Colors.blue,
           child: Center(
-            child: CircularProgressIndicator(),
+            child: CircularProgressIndicator(
+              value: null,
+            ),
           ),
         );
       },
