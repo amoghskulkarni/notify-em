@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -62,6 +63,32 @@ class NotificationCards extends StatelessWidget {
       return Colors.red;
     }
     return Colors.green;
+  }
+
+  String _getRupeesString(num rs) {
+    String rsString = rs.toString();
+    Characters retString = new Characters('');
+
+    Characters rsChars = rsString.characters;
+    bool commaAt3 = false;
+    var j = 1;
+    for (var i = rsChars.length - 1; i >= 0; i--) {
+      retString += rsChars.characterAt(i);
+      if (!commaAt3) {
+        if (j == 3) {
+          retString += new Characters(',');
+          commaAt3 = true;
+        }
+      } else {
+        if ((j - 3).isEven && (i > 0)) {
+          retString += new Characters(',');
+        }
+      }
+
+      j += 1;
+    }
+
+    return retString.toString().split('').reversed.join();
   }
 
   List<Widget> _generateCards(listIn) {
@@ -153,15 +180,20 @@ class NotificationCards extends StatelessWidget {
                                   height: 5.0,
                                 ),
                                 Text(
-                                  investment.toString(),
+                                  String.fromCharCode(8377) +
+                                      ' ' +
+                                      _getRupeesString(investment),
                                   style: TextStyle(fontWeight: FontWeight.bold),
                                 ),
                               ],
                             ),
                           ),
                         ),
-                        VerticalDivider(
-                          color: Colors.black,
+                        Container(
+                          height: 30,
+                          child: VerticalDivider(
+                            color: Colors.black,
+                          ),
                         ),
                         Expanded(
                           child: Padding(
@@ -181,7 +213,12 @@ class NotificationCards extends StatelessWidget {
                             ),
                           ),
                         ),
-                        VerticalDivider(),
+                        Container(
+                          height: 30,
+                          child: VerticalDivider(
+                            color: Colors.black,
+                          ),
+                        ),
                         Expanded(
                           child: Padding(
                             padding: EdgeInsets.all(10.0),
@@ -193,7 +230,9 @@ class NotificationCards extends StatelessWidget {
                                   height: 5.0,
                                 ),
                                 Text(
-                                  nav.toString(),
+                                  String.fromCharCode(8377) +
+                                      ' ' +
+                                      _getRupeesString(nav),
                                   style: TextStyle(fontWeight: FontWeight.bold),
                                 ),
                               ],
