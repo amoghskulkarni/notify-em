@@ -17,19 +17,9 @@ class NotificationWallPage extends StatefulWidget {
 class _NotificationWallPageState extends State<NotificationWallPage> {
   @override
   Widget build(BuildContext context) {
-    return NotificationCards(user: widget.user);
-  }
-}
-
-class NotificationCards extends StatelessWidget {
-  // The user object that gets passed to this widget
-  final User user;
-  NotificationCards({Key key, @required this.user}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    if (user != null) {
-      final String _uid = user.uid;
+    // return NotificationCards(user: widget.user);
+    if (widget.user != null) {
+      final String _uid = widget.user.uid;
       DocumentReference userDoc = firestore.collection('data').doc(_uid);
 
       return StreamBuilder<DocumentSnapshot>(
@@ -49,9 +39,10 @@ class NotificationCards extends StatelessWidget {
           final Map<String, dynamic> docdata = snapshot.data.data();
           final notifications = docdata['notifications'];
 
-          return new ListView(
-            scrollDirection: Axis.vertical,
-            children: _generateCards(notifications),
+          return new Column(
+            children: [
+              NotificationCards(notifications: notifications),
+            ],
           );
         },
       );
@@ -62,6 +53,54 @@ class NotificationCards extends StatelessWidget {
         ),
       );
     }
+  }
+}
+
+class NotificationCards extends StatelessWidget {
+  // The user object that gets passed to this widget
+  final Map<dynamic, dynamic> notifications;
+  NotificationCards({Key key, @required this.notifications}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    // if (user != null) {
+    //   final String _uid = user.uid;
+    //   DocumentReference userDoc = firestore.collection('data').doc(_uid);
+
+    //   return StreamBuilder<DocumentSnapshot>(
+    //     stream: userDoc.snapshots(),
+    //     builder:
+    //         (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
+    //       if (snapshot.hasError) {
+    //         return Text('Something went wrong');
+    //       }
+
+    //       if (snapshot.connectionState == ConnectionState.waiting) {
+    //         return CircularProgressIndicator(
+    //           value: null,
+    //         );
+    //       }
+
+    //       final Map<String, dynamic> docdata = snapshot.data.data();
+    //       final notifications = docdata['notifications'];
+
+    //       return new ListView(
+    //         scrollDirection: Axis.vertical,
+    //         children: _generateCards(notifications),
+    //       );
+    //     },
+    //   );
+    // } else {
+    // return Container(
+    //   child: CircularProgressIndicator(
+    //     value: null,
+    //   ),
+    // );
+    // }
+    return ListView(
+      scrollDirection: Axis.vertical,
+      children: _generateCards(notifications),
+    );
   }
 
   Color _getCardColorByInvestment(num gain) {
