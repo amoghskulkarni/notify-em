@@ -19,8 +19,12 @@ class _NotificationWallPageState extends State<NotificationWallPage> {
   List<Timestamp> dateDropdownValues = [];
   Timestamp selectedDate;
 
-  List<String> folioDropdownValues = [null];
-  String selectedFolio;
+  List<String> folioDropdownValues = [
+    'All folios',
+    'Folios in profit',
+    'Folios in loss',
+  ];
+  String selectedFolio = 'All folios';
 
   @override
   Widget build(BuildContext context) {
@@ -57,9 +61,9 @@ class _NotificationWallPageState extends State<NotificationWallPage> {
                 dateDropdownValues.add(t);
               }
 
-              if (!folioDropdownValues.contains(scheme)) {
-                folioDropdownValues.add(scheme);
-              }
+              // if (!folioDropdownValues.contains(scheme)) {
+              //   folioDropdownValues.add(scheme);
+              // }
             }
 
             if (dateDropdownValues.isNotEmpty && !dateSelectedManually) {
@@ -77,14 +81,18 @@ class _NotificationWallPageState extends State<NotificationWallPage> {
             }).toList();
 
             filteredNotifications = filteredNotifications.where((el) {
-              if (selectedFolio == null) {
+              if (selectedFolio == 'All folios') {
                 return true;
               }
-              final String _scheme = el['scheme'];
-              if ((selectedFolio != null) &&
-                  (selectedFolio.compareTo(_scheme) == 0)) {
+
+              final num _returns = el['return'];
+              if ((selectedFolio == 'Folios in profit') && (_returns >= 0)) {
                 return true;
               }
+              if ((selectedFolio == 'Folios in loss') && (_returns < 0)) {
+                return true;
+              }
+
               return false;
             }).toList();
 
@@ -110,10 +118,9 @@ class _NotificationWallPageState extends State<NotificationWallPage> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text('Folio: '),
                             _getFolioDropdown(),
                           ],
-                        ),
+                        )
                       ],
                     ),
                   ),
@@ -201,20 +208,17 @@ class _NotificationWallPageState extends State<NotificationWallPage> {
         });
       },
       items: folioDropdownValues.map<DropdownMenuItem<String>>((String s) {
-        String description = "";
-        if (s == null) {
-          description += "All";
-        } else {
-          description += s;
-        }
+        // String description = "";
+        // if (s == null) {
+        //   description += "All";
+        // } else {
+        //   description += s;
+        // }
         return DropdownMenuItem<String>(
           value: s,
-          child: SizedBox(
-            child: Text(
-              description,
-              overflow: TextOverflow.ellipsis,
-            ),
-            width: 100.0,
+          child: Text(
+            s,
+            overflow: TextOverflow.ellipsis,
           ),
         );
       }).toList(),
