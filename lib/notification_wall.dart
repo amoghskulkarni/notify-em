@@ -15,21 +15,18 @@ class NotificationWallPage extends StatefulWidget {
 }
 
 class _NotificationWallPageState extends State<NotificationWallPage> {
-  @override
-  Widget build(BuildContext context) {
-    return NotificationCards(user: widget.user);
-  }
-}
+  bool dateSelectedManually = false;
+  List<Timestamp> dateDropdownValues = [];
+  Timestamp selectedDate;
 
-class NotificationCards extends StatelessWidget {
-  // The user object that gets passed to this widget
-  final User user;
-  NotificationCards({Key key, @required this.user}) : super(key: key);
+  List<String> folioDropdownValues = [null];
+  String selectedFolio;
 
   @override
   Widget build(BuildContext context) {
-    if (user != null) {
-      final String _uid = user.uid;
+    // return NotificationCards(user: widget.user);
+    if (widget.user != null) {
+      final String _uid = widget.user.uid;
       DocumentReference userDoc = firestore.collection('data').doc(_uid);
 
       return StreamBuilder<DocumentSnapshot>(
@@ -37,7 +34,7 @@ class NotificationCards extends StatelessWidget {
         builder:
             (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
           if (snapshot.hasError) {
-            return Text('Something went wrong');
+            return Text('Something went wrong!');
           }
 
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -46,12 +43,94 @@ class NotificationCards extends StatelessWidget {
             );
           }
 
-          final Map<String, dynamic> docdata = snapshot.data.data();
-          final notifications = docdata['notifications'];
+          if (snapshot.hasData) {
+            final Map<String, dynamic> docdata = snapshot.data.data();
+            final List<dynamic> notifications = docdata['notifications'];
+            List<dynamic> filteredNotifications;
 
-          return new ListView(
-            scrollDirection: Axis.vertical,
-            children: _generateCards(notifications),
+            for (var n in notifications) {
+              final Timestamp t = n['date'];
+              final String scheme = n['scheme'];
+
+              // Push the date if the array doesn't contain it
+              if (!dateDropdownValues.contains(t)) {
+                dateDropdownValues.add(t);
+              }
+
+              if (!folioDropdownValues.contains(scheme)) {
+                folioDropdownValues.add(scheme);
+              }
+            }
+
+            if (dateDropdownValues.isNotEmpty && !dateSelectedManually) {
+              selectedDate = dateDropdownValues.last;
+            }
+
+            // Filter notifications according to what is selected
+            // in the date dropdown
+            filteredNotifications = notifications.where((el) {
+              final Timestamp t = el['date'];
+              if (selectedDate.compareTo(t) == 0) {
+                return true;
+              }
+              return false;
+            }).toList();
+
+            filteredNotifications = filteredNotifications.where((el) {
+              if (selectedFolio == null) {
+                return true;
+              }
+              final String _scheme = el['scheme'];
+              if ((selectedFolio != null) &&
+                  (selectedFolio.compareTo(_scheme) == 0)) {
+                return true;
+              }
+              return false;
+            }).toList();
+
+            return new Column(children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text('As of: '),
+                            _getDateDropdown(),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text('Folio: '),
+                            _getFolioDropdown(),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(
+                height: 10.0,
+              ),
+              Expanded(
+                child: NotificationCards(notifications: filteredNotifications),
+              ),
+            ]);
+          }
+
+          // Show the spinner by default
+          return CircularProgressIndicator(
+            value: null,
           );
         },
       );
@@ -62,6 +141,99 @@ class NotificationCards extends StatelessWidget {
         ),
       );
     }
+  }
+
+  Widget _getDateDropdown() {
+    return DropdownButton<Timestamp>(
+      value: selectedDate,
+      icon: Icon(
+        Icons.arrow_downward,
+        color: Colors.blue,
+      ),
+      iconSize: 16,
+      elevation: 8,
+      style: TextStyle(color: Colors.blue),
+      underline: Container(
+        height: 2,
+        color: Colors.blue[50],
+      ),
+      onChanged: (Timestamp newValue) {
+        setState(() {
+          selectedDate = newValue;
+          dateSelectedManually = true;
+        });
+      },
+      items: dateDropdownValues.map<DropdownMenuItem<Timestamp>>((Timestamp t) {
+        String description = "";
+        if (t == null) {
+          description += "All";
+        } else {
+          final DateTime d =
+              DateTime.fromMillisecondsSinceEpoch(t.millisecondsSinceEpoch);
+
+          description += (d.month.toString() + ' / ' + d.year.toString() + ' ');
+        }
+        return DropdownMenuItem<Timestamp>(
+          value: t,
+          child: Text(description),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _getFolioDropdown() {
+    return DropdownButton<String>(
+      value: selectedFolio,
+      icon: Icon(
+        Icons.arrow_downward,
+        color: Colors.blue,
+      ),
+      iconSize: 16,
+      elevation: 8,
+      style: TextStyle(color: Colors.blue),
+      underline: Container(
+        height: 2,
+        color: Colors.blue[50],
+      ),
+      onChanged: (String newValue) {
+        setState(() {
+          selectedFolio = newValue;
+        });
+      },
+      items: folioDropdownValues.map<DropdownMenuItem<String>>((String s) {
+        String description = "";
+        if (s == null) {
+          description += "All";
+        } else {
+          description += s;
+        }
+        return DropdownMenuItem<String>(
+          value: s,
+          child: SizedBox(
+            child: Text(
+              description,
+              overflow: TextOverflow.ellipsis,
+            ),
+            width: 100.0,
+          ),
+        );
+      }).toList(),
+    );
+  }
+}
+
+class NotificationCards extends StatelessWidget {
+  // The user object that gets passed to this widget
+  final List<dynamic> notifications;
+  NotificationCards({Key key, @required this.notifications}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      shrinkWrap: true,
+      scrollDirection: Axis.vertical,
+      children: _generateCards(notifications),
+    );
   }
 
   Color _getCardColorByInvestment(num gain) {
