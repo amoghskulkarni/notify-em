@@ -15,7 +15,8 @@ class NotificationWallPage extends StatefulWidget {
 }
 
 class _NotificationWallPageState extends State<NotificationWallPage> {
-  List<Timestamp> dateDropdownValues = [null];
+  bool dateSelectedManually = false;
+  List<Timestamp> dateDropdownValues = [];
   Timestamp selectedDate;
 
   List<String> folioDropdownValues = [null];
@@ -61,14 +62,15 @@ class _NotificationWallPageState extends State<NotificationWallPage> {
               }
             }
 
+            if (dateDropdownValues.isNotEmpty && !dateSelectedManually) {
+              selectedDate = dateDropdownValues.last;
+            }
+
             // Filter notifications according to what is selected
             // in the date dropdown
             filteredNotifications = notifications.where((el) {
-              if (selectedDate == null) {
-                return true;
-              }
               final Timestamp t = el['date'];
-              if ((selectedDate != null) && (selectedDate.compareTo(t) == 0)) {
+              if (selectedDate.compareTo(t) == 0) {
                 return true;
               }
               return false;
@@ -144,17 +146,21 @@ class _NotificationWallPageState extends State<NotificationWallPage> {
   Widget _getDateDropdown() {
     return DropdownButton<Timestamp>(
       value: selectedDate,
-      icon: Icon(Icons.arrow_downward),
+      icon: Icon(
+        Icons.arrow_downward,
+        color: Colors.blue,
+      ),
       iconSize: 16,
       elevation: 8,
-      style: TextStyle(color: Colors.deepPurple),
+      style: TextStyle(color: Colors.blue),
       underline: Container(
         height: 2,
-        color: Colors.blue[200],
+        color: Colors.blue[50],
       ),
       onChanged: (Timestamp newValue) {
         setState(() {
           selectedDate = newValue;
+          dateSelectedManually = true;
         });
       },
       items: dateDropdownValues.map<DropdownMenuItem<Timestamp>>((Timestamp t) {
@@ -165,9 +171,7 @@ class _NotificationWallPageState extends State<NotificationWallPage> {
           final DateTime d =
               DateTime.fromMillisecondsSinceEpoch(t.millisecondsSinceEpoch);
 
-          description += d.month.toString();
-          description += '/';
-          description += d.year.toString();
+          description += (d.month.toString() + ' / ' + d.year.toString() + ' ');
         }
         return DropdownMenuItem<Timestamp>(
           value: t,
@@ -180,13 +184,16 @@ class _NotificationWallPageState extends State<NotificationWallPage> {
   Widget _getFolioDropdown() {
     return DropdownButton<String>(
       value: selectedFolio,
-      icon: Icon(Icons.arrow_downward),
+      icon: Icon(
+        Icons.arrow_downward,
+        color: Colors.blue,
+      ),
       iconSize: 16,
       elevation: 8,
-      style: TextStyle(color: Colors.deepPurple),
+      style: TextStyle(color: Colors.blue),
       underline: Container(
         height: 2,
-        color: Colors.blue[200],
+        color: Colors.blue[50],
       ),
       onChanged: (String newValue) {
         setState(() {
