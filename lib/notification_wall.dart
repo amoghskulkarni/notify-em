@@ -18,6 +18,9 @@ class _NotificationWallPageState extends State<NotificationWallPage> {
   List<Timestamp> dateDropdownValues = [null];
   Timestamp selectedDate;
 
+  List<String> folioDropdownValues = [null];
+  String selectedFolio;
+
   @override
   Widget build(BuildContext context) {
     // return NotificationCards(user: widget.user);
@@ -46,15 +49,20 @@ class _NotificationWallPageState extends State<NotificationWallPage> {
 
             for (var n in notifications) {
               final Timestamp t = n['date'];
+              final String scheme = n['scheme'];
 
               // Push the date if the array doesn't contain it
               if (!dateDropdownValues.contains(t)) {
                 dateDropdownValues.add(t);
               }
+
+              if (!folioDropdownValues.contains(scheme)) {
+                folioDropdownValues.add(scheme);
+              }
             }
 
             // Filter notifications according to what is selected
-            // in the dropdowns
+            // in the date dropdown
             filteredNotifications = notifications.where((el) {
               if (selectedDate == null) {
                 return true;
@@ -66,8 +74,49 @@ class _NotificationWallPageState extends State<NotificationWallPage> {
               return false;
             }).toList();
 
+            filteredNotifications = filteredNotifications.where((el) {
+              if (selectedFolio == null) {
+                return true;
+              }
+              final String _scheme = el['scheme'];
+              if ((selectedFolio != null) &&
+                  (selectedFolio.compareTo(_scheme) == 0)) {
+                return true;
+              }
+              return false;
+            }).toList();
+
             return new Column(children: [
-              _getDateDropdown(),
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text('As of: '),
+                            _getDateDropdown(),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text('Folio: '),
+                            _getFolioDropdown(),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
               SizedBox(
                 height: 10.0,
               ),
@@ -123,6 +172,43 @@ class _NotificationWallPageState extends State<NotificationWallPage> {
         return DropdownMenuItem<Timestamp>(
           value: t,
           child: Text(description),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _getFolioDropdown() {
+    return DropdownButton<String>(
+      value: selectedFolio,
+      icon: Icon(Icons.arrow_downward),
+      iconSize: 16,
+      elevation: 8,
+      style: TextStyle(color: Colors.deepPurple),
+      underline: Container(
+        height: 2,
+        color: Colors.blue[200],
+      ),
+      onChanged: (String newValue) {
+        setState(() {
+          selectedFolio = newValue;
+        });
+      },
+      items: folioDropdownValues.map<DropdownMenuItem<String>>((String s) {
+        String description = "";
+        if (s == null) {
+          description += "All";
+        } else {
+          description += s;
+        }
+        return DropdownMenuItem<String>(
+          value: s,
+          child: SizedBox(
+            child: Text(
+              description,
+              overflow: TextOverflow.ellipsis,
+            ),
+            width: 100.0,
+          ),
         );
       }).toList(),
     );
