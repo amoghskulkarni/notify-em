@@ -58,7 +58,9 @@ class _EmailPasswordFormState extends State<_EmailPasswordForm> {
   @override
   Widget build(BuildContext context) {
     return Form(
-        key: _formKey,
+      key: _formKey,
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(10.0, 0.0, 10.0, 0.0),
         child: Card(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
@@ -104,7 +106,9 @@ class _EmailPasswordFormState extends State<_EmailPasswordForm> {
               ],
             ),
           ),
-        ));
+        ),
+      ),
+    );
   }
 
   @override
